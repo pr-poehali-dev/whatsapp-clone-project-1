@@ -28,6 +28,7 @@ interface Message {
   type: 'text' | 'voice' | 'file';
   duration?: string;
   fileName?: string;
+  status?: 'sending' | 'sent' | 'delivered' | 'read';
 }
 
 const mockChats: Chat[] = [
@@ -43,7 +44,7 @@ export default function Index() {
   const [selectedChat, setSelectedChat] = useState<Chat | null>(mockChats[0]);
   const [messages, setMessages] = useState<Message[]>([
     { id: 1, text: 'Привет! Как дела?', time: '14:20', sent: false, type: 'text' },
-    { id: 2, text: 'Отлично! Работаю над новым проектом', time: '14:21', sent: true, type: 'text' },
+    { id: 2, text: 'Отлично! Работаю над новым проектом', time: '14:21', sent: true, type: 'text', status: 'read' },
     { id: 3, text: 'Звучит интересно! Расскажешь подробнее?', time: '14:23', sent: false, type: 'text' },
   ]);
   const [newMessage, setNewMessage] = useState('');
@@ -58,14 +59,26 @@ export default function Index() {
 
   const sendMessage = () => {
     if (newMessage.trim()) {
-      setMessages([...messages, {
+      const newMsg: Message = {
         id: messages.length + 1,
         text: newMessage,
         time: new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }),
         sent: true,
-        type: 'text'
-      }]);
+        type: 'text',
+        status: 'sending'
+      };
+      setMessages([...messages, newMsg]);
       setNewMessage('');
+      
+      setTimeout(() => {
+        setMessages(prev => prev.map(m => m.id === newMsg.id ? {...m, status: 'sent'} : m));
+      }, 500);
+      setTimeout(() => {
+        setMessages(prev => prev.map(m => m.id === newMsg.id ? {...m, status: 'delivered'} : m));
+      }, 1500);
+      setTimeout(() => {
+        setMessages(prev => prev.map(m => m.id === newMsg.id ? {...m, status: 'read'} : m));
+      }, 3000);
     }
   };
 
@@ -82,24 +95,48 @@ export default function Index() {
 
   const stopRecording = () => {
     setIsRecording(false);
-    setMessages([...messages, {
+    const newMsg: Message = {
       id: messages.length + 1,
       time: new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }),
       sent: true,
       type: 'voice',
-      duration: `0:${recordingTime.toString().padStart(2, '0')}`
-    }]);
+      duration: `0:${recordingTime.toString().padStart(2, '0')}`,
+      status: 'sending'
+    };
+    setMessages([...messages, newMsg]);
     setRecordingTime(0);
+    
+    setTimeout(() => {
+      setMessages(prev => prev.map(m => m.id === newMsg.id ? {...m, status: 'sent'} : m));
+    }, 500);
+    setTimeout(() => {
+      setMessages(prev => prev.map(m => m.id === newMsg.id ? {...m, status: 'delivered'} : m));
+    }, 1500);
+    setTimeout(() => {
+      setMessages(prev => prev.map(m => m.id === newMsg.id ? {...m, status: 'read'} : m));
+    }, 3000);
   };
 
   const sendFile = () => {
-    setMessages([...messages, {
+    const newMsg: Message = {
       id: messages.length + 1,
       time: new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }),
       sent: true,
       type: 'file',
-      fileName: 'документ.pdf'
-    }]);
+      fileName: 'документ.pdf',
+      status: 'sending'
+    };
+    setMessages([...messages, newMsg]);
+    
+    setTimeout(() => {
+      setMessages(prev => prev.map(m => m.id === newMsg.id ? {...m, status: 'sent'} : m));
+    }, 500);
+    setTimeout(() => {
+      setMessages(prev => prev.map(m => m.id === newMsg.id ? {...m, status: 'delivered'} : m));
+    }, 1500);
+    setTimeout(() => {
+      setMessages(prev => prev.map(m => m.id === newMsg.id ? {...m, status: 'read'} : m));
+    }, 3000);
   };
 
   if (showVideoCall) {
@@ -376,32 +413,96 @@ export default function Index() {
                       {message.type === 'text' && (
                         <>
                           <p className="mb-1">{message.text}</p>
-                          <p className={`text-xs ${message.sent ? 'text-purple-100' : 'text-gray-500'} text-right`}>
-                            {message.time}
-                          </p>
+                          <div className={`flex items-center justify-end gap-1 text-xs ${message.sent ? 'text-purple-100' : 'text-gray-500'}`}>
+                            <span>{message.time}</span>
+                            {message.sent && message.status && (
+                              <span className="flex items-center">
+                                {message.status === 'sending' && (
+                                  <Icon name="Clock" size={14} className="opacity-60" />
+                                )}
+                                {message.status === 'sent' && (
+                                  <Icon name="Check" size={14} className="opacity-60" />
+                                )}
+                                {message.status === 'delivered' && (
+                                  <div className="flex -space-x-1">
+                                    <Icon name="Check" size={14} className="opacity-60" />
+                                    <Icon name="Check" size={14} className="opacity-60" />
+                                  </div>
+                                )}
+                                {message.status === 'read' && (
+                                  <div className="flex -space-x-1">
+                                    <Icon name="Check" size={14} className="text-blue-300" />
+                                    <Icon name="Check" size={14} className="text-blue-300" />
+                                  </div>
+                                )}
+                              </span>
+                            )}
+                          </div>
                         </>
                       )}
                       {message.type === 'voice' && (
-                        <div className="flex items-center gap-3 min-w-[200px]">
-                          <Button size="icon" variant="ghost" className={`rounded-full ${message.sent ? 'text-white hover:bg-white/20' : 'text-purple-600 hover:bg-purple-50'}`}>
-                            <Icon name="Play" size={20} />
-                          </Button>
-                          <div className="flex-1 h-8 flex items-center gap-1">
-                            {[...Array(20)].map((_, i) => (
-                              <div key={i} className={`w-1 ${message.sent ? 'bg-white/60' : 'bg-purple-300'} rounded-full`} style={{ height: `${Math.random() * 100}%` }} />
-                            ))}
+                        <div className="flex flex-col gap-2">
+                          <div className="flex items-center gap-3 min-w-[200px]">
+                            <Button size="icon" variant="ghost" className={`rounded-full ${message.sent ? 'text-white hover:bg-white/20' : 'text-purple-600 hover:bg-purple-50'}`}>
+                              <Icon name="Play" size={20} />
+                            </Button>
+                            <div className="flex-1 h-8 flex items-center gap-1">
+                              {[...Array(20)].map((_, i) => (
+                                <div key={i} className={`w-1 ${message.sent ? 'bg-white/60' : 'bg-purple-300'} rounded-full`} style={{ height: `${Math.random() * 100}%` }} />
+                              ))}
+                            </div>
+                            <span className={`text-xs ${message.sent ? 'text-purple-100' : 'text-gray-500'}`}>{message.duration}</span>
                           </div>
-                          <span className={`text-xs ${message.sent ? 'text-purple-100' : 'text-gray-500'}`}>{message.duration}</span>
+                          {message.sent && message.status && (
+                            <div className={`flex items-center justify-end gap-1 text-xs text-purple-100`}>
+                              {message.status === 'sending' && <Icon name="Clock" size={14} className="opacity-60" />}
+                              {message.status === 'sent' && <Icon name="Check" size={14} className="opacity-60" />}
+                              {message.status === 'delivered' && (
+                                <div className="flex -space-x-1">
+                                  <Icon name="Check" size={14} className="opacity-60" />
+                                  <Icon name="Check" size={14} className="opacity-60" />
+                                </div>
+                              )}
+                              {message.status === 'read' && (
+                                <div className="flex -space-x-1">
+                                  <Icon name="Check" size={14} className="text-blue-300" />
+                                  <Icon name="Check" size={14} className="text-blue-300" />
+                                </div>
+                              )}
+                            </div>
+                          )}
                         </div>
                       )}
                       {message.type === 'file' && (
-                        <div className="flex items-center gap-3">
-                          <div className={`w-12 h-12 rounded-full ${message.sent ? 'bg-white/20' : 'bg-purple-100'} flex items-center justify-center`}>
-                            <Icon name="FileText" size={24} className={message.sent ? 'text-white' : 'text-purple-600'} />
-                          </div>
-                          <div className="flex-1">
-                            <p className="font-semibold text-sm">{message.fileName}</p>
-                            <p className={`text-xs ${message.sent ? 'text-purple-100' : 'text-gray-500'}`}>{message.time}</p>
+                        <div className="flex flex-col gap-2">
+                          <div className="flex items-center gap-3">
+                            <div className={`w-12 h-12 rounded-full ${message.sent ? 'bg-white/20' : 'bg-purple-100'} flex items-center justify-center`}>
+                              <Icon name="FileText" size={24} className={message.sent ? 'text-white' : 'text-purple-600'} />
+                            </div>
+                            <div className="flex-1">
+                              <p className="font-semibold text-sm">{message.fileName}</p>
+                              <div className={`flex items-center gap-1 text-xs ${message.sent ? 'text-purple-100' : 'text-gray-500'}`}>
+                                <span>{message.time}</span>
+                                {message.sent && message.status && (
+                                  <span className="flex items-center ml-1">
+                                    {message.status === 'sending' && <Icon name="Clock" size={14} className="opacity-60" />}
+                                    {message.status === 'sent' && <Icon name="Check" size={14} className="opacity-60" />}
+                                    {message.status === 'delivered' && (
+                                      <div className="flex -space-x-1">
+                                        <Icon name="Check" size={14} className="opacity-60" />
+                                        <Icon name="Check" size={14} className="opacity-60" />
+                                      </div>
+                                    )}
+                                    {message.status === 'read' && (
+                                      <div className="flex -space-x-1">
+                                        <Icon name="Check" size={14} className="text-blue-300" />
+                                        <Icon name="Check" size={14} className="text-blue-300" />
+                                      </div>
+                                    )}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
                           </div>
                         </div>
                       )}
