@@ -57,6 +57,7 @@ export default function Index() {
   const [userName, setUserName] = useState('Вы');
   const [userBio, setUserBio] = useState('Всегда на связи! 📱');
   const [isTyping, setIsTyping] = useState(false);
+  const [selectedMessage, setSelectedMessage] = useState<number | null>(null);
 
   const sendMessage = () => {
     if (newMessage.trim()) {
@@ -143,6 +144,33 @@ export default function Index() {
       status: 'sending'
     };
     setMessages([...messages, newMsg]);
+    
+    setTimeout(() => {
+      setMessages(prev => prev.map(m => m.id === newMsg.id ? {...m, status: 'sent'} : m));
+    }, 500);
+    setTimeout(() => {
+      setMessages(prev => prev.map(m => m.id === newMsg.id ? {...m, status: 'delivered'} : m));
+    }, 1500);
+    setTimeout(() => {
+      setMessages(prev => prev.map(m => m.id === newMsg.id ? {...m, status: 'read'} : m));
+    }, 3000);
+  };
+
+  const deleteMessage = (messageId: number) => {
+    setMessages(prev => prev.filter(m => m.id !== messageId));
+    setSelectedMessage(null);
+  };
+
+  const forwardMessage = (message: Message) => {
+    const newMsg: Message = {
+      ...message,
+      id: messages.length + 1,
+      time: new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }),
+      sent: true,
+      status: 'sending'
+    };
+    setMessages([...messages, newMsg]);
+    setSelectedMessage(null);
     
     setTimeout(() => {
       setMessages(prev => prev.map(m => m.id === newMsg.id ? {...m, status: 'sent'} : m));
@@ -425,16 +453,38 @@ export default function Index() {
                 {messages.map((message, index) => (
                   <div
                     key={message.id}
-                    className={`flex ${message.sent ? 'justify-end' : 'justify-start'} animate-fade-in`}
+                    className={`flex ${message.sent ? 'justify-end' : 'justify-start'} animate-fade-in group`}
                     style={{ animationDelay: `${index * 0.1}s` }}
                   >
-                    <div
-                      className={`max-w-md px-5 py-3 rounded-3xl shadow-md ${
-                        message.sent
-                          ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-br-lg'
-                          : darkMode ? 'bg-gray-800 border border-gray-700 text-gray-100 rounded-bl-lg' : 'bg-white border border-purple-100 text-gray-800 rounded-bl-lg'
-                      }`}
-                    >
+                    <div className="relative flex items-start gap-2">
+                      {message.sent && (
+                        <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-1 mt-2">
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className={`h-8 w-8 rounded-full ${darkMode ? 'hover:bg-gray-800 text-gray-400' : 'hover:bg-purple-100 text-purple-600'}`}
+                            onClick={() => forwardMessage(message)}
+                          >
+                            <Icon name="Forward" size={16} />
+                          </Button>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className={`h-8 w-8 rounded-full ${darkMode ? 'hover:bg-red-900/30 text-red-400' : 'hover:bg-red-100 text-red-600'}`}
+                            onClick={() => deleteMessage(message.id)}
+                          >
+                            <Icon name="Trash2" size={16} />
+                          </Button>
+                        </div>
+                      )}
+                      <div
+                        className={`max-w-md px-5 py-3 rounded-3xl shadow-md cursor-pointer ${
+                          message.sent
+                            ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-br-lg'
+                            : darkMode ? 'bg-gray-800 border border-gray-700 text-gray-100 rounded-bl-lg' : 'bg-white border border-purple-100 text-gray-800 rounded-bl-lg'
+                        }`}
+                        onClick={() => setSelectedMessage(selectedMessage === message.id ? null : message.id)}
+                      >
                       {message.type === 'text' && (
                         <>
                           <p className="mb-1">{message.text}</p>
@@ -529,6 +579,19 @@ export default function Index() {
                               </div>
                             </div>
                           </div>
+                        </div>
+                      )}
+                      </div>
+                      {!message.sent && (
+                        <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-1 mt-2">
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className={`h-8 w-8 rounded-full ${darkMode ? 'hover:bg-gray-800 text-gray-400' : 'hover:bg-purple-100 text-purple-600'}`}
+                            onClick={() => forwardMessage(message)}
+                          >
+                            <Icon name="Forward" size={16} />
+                          </Button>
                         </div>
                       )}
                     </div>
