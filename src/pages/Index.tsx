@@ -48,6 +48,7 @@ export default function Index() {
   ]);
   const [newMessage, setNewMessage] = useState('');
   const [showVideoCall, setShowVideoCall] = useState(false);
+  const [darkMode, setDarkMode] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
   const [showSettings, setShowSettings] = useState(false);
@@ -167,12 +168,20 @@ export default function Index() {
   }
 
   return (
-    <div className="h-screen flex bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50">
-      <div className="w-96 bg-white/80 backdrop-blur-xl border-r border-purple-100 flex flex-col shadow-2xl">
+    <div className={`h-screen flex transition-colors duration-300 ${darkMode ? 'bg-gradient-to-br from-gray-900 via-purple-950 to-indigo-950' : 'bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50'}`}>
+      <div className={`w-96 backdrop-blur-xl border-r flex flex-col shadow-2xl transition-colors duration-300 ${darkMode ? 'bg-gray-900/80 border-gray-800' : 'bg-white/80 border-purple-100'}`}>
         <div className="p-6 bg-gradient-to-r from-purple-600 via-pink-500 to-blue-500 text-white">
           <div className="flex items-center justify-between mb-4">
             <h1 className="text-2xl font-bold">Мессенджер</h1>
             <div className="flex gap-2">
+              <Button 
+                size="icon" 
+                variant="ghost" 
+                className="text-white hover:bg-white/20 rounded-full"
+                onClick={() => setDarkMode(!darkMode)}
+              >
+                <Icon name={darkMode ? 'Sun' : 'Moon'} size={20} />
+              </Button>
               <Dialog open={showNewGroup} onOpenChange={setShowNewGroup}>
                 <DialogTrigger asChild>
                   <Button size="icon" variant="ghost" className="text-white hover:bg-white/20 rounded-full">
@@ -273,8 +282,8 @@ export default function Index() {
                 onClick={() => setSelectedChat(chat)}
                 className={`w-full p-4 rounded-2xl mb-2 flex items-start gap-3 transition-all hover:scale-[1.02] ${
                   selectedChat?.id === chat.id
-                    ? 'bg-gradient-to-r from-purple-100 to-pink-100 shadow-md'
-                    : 'hover:bg-purple-50/50'
+                    ? darkMode ? 'bg-gradient-to-r from-purple-900/50 to-pink-900/50 shadow-md' : 'bg-gradient-to-r from-purple-100 to-pink-100 shadow-md'
+                    : darkMode ? 'hover:bg-gray-800/50' : 'hover:bg-purple-50/50'
                 }`}
               >
                 <div className="relative">
@@ -289,10 +298,10 @@ export default function Index() {
                 </div>
                 <div className="flex-1 text-left min-w-0">
                   <div className="flex justify-between items-start mb-1">
-                    <h3 className="font-semibold text-gray-800 truncate">{chat.name}</h3>
-                    <span className="text-xs text-gray-500 ml-2 flex-shrink-0">{chat.time}</span>
+                    <h3 className={`font-semibold truncate ${darkMode ? 'text-gray-100' : 'text-gray-800'}`}>{chat.name}</h3>
+                    <span className={`text-xs ml-2 flex-shrink-0 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{chat.time}</span>
                   </div>
-                  <p className="text-sm text-gray-600 truncate">{chat.lastMessage}</p>
+                  <p className={`text-sm truncate ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{chat.lastMessage}</p>
                 </div>
                 {chat.unread > 0 && (
                   <div className="flex-shrink-0 w-6 h-6 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center text-white text-xs font-bold">
@@ -305,10 +314,10 @@ export default function Index() {
         </ScrollArea>
       </div>
 
-      <div className="flex-1 flex flex-col bg-white/60 backdrop-blur-sm">
+      <div className={`flex-1 flex flex-col backdrop-blur-sm transition-colors duration-300 ${darkMode ? 'bg-gray-800/60' : 'bg-white/60'}`}>
         {selectedChat ? (
           <>
-            <div className="p-6 bg-white/90 backdrop-blur-xl border-b border-purple-100 flex items-center justify-between shadow-sm">
+            <div className={`p-6 backdrop-blur-xl border-b flex items-center justify-between shadow-sm transition-colors duration-300 ${darkMode ? 'bg-gray-900/90 border-gray-800' : 'bg-white/90 border-purple-100'}`}>
               <div className="flex items-center gap-4">
                 <Avatar className="w-12 h-12 border-2 border-purple-200 shadow-md">
                   <AvatarFallback className={`${selectedChat.isGroup ? 'bg-gradient-to-br from-blue-400 to-indigo-400' : 'bg-gradient-to-br from-purple-400 to-pink-400'} text-white font-semibold`}>
@@ -316,8 +325,8 @@ export default function Index() {
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <h2 className="font-semibold text-gray-800 text-lg">{selectedChat.name}</h2>
-                  <p className="text-sm text-gray-600 flex items-center gap-1">
+                  <h2 className={`font-semibold text-lg ${darkMode ? 'text-gray-100' : 'text-gray-800'}`}>{selectedChat.name}</h2>
+                  <p className={`text-sm flex items-center gap-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                     {selectedChat.isGroup ? (
                       <span>{selectedChat.members?.length} участников</span>
                     ) : (
@@ -343,7 +352,7 @@ export default function Index() {
                 >
                   <Icon name="Phone" className="text-white" size={20} />
                 </Button>
-                <Button size="icon" variant="ghost" className="rounded-full hover:bg-purple-100">
+                <Button size="icon" variant="ghost" className={`rounded-full ${darkMode ? 'hover:bg-gray-800' : 'hover:bg-purple-100'}`}>
                   <Icon name="MoreVertical" size={20} />
                 </Button>
               </div>
@@ -361,7 +370,7 @@ export default function Index() {
                       className={`max-w-md px-5 py-3 rounded-3xl shadow-md ${
                         message.sent
                           ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-br-lg'
-                          : 'bg-white border border-purple-100 text-gray-800 rounded-bl-lg'
+                          : darkMode ? 'bg-gray-800 border border-gray-700 text-gray-100 rounded-bl-lg' : 'bg-white border border-purple-100 text-gray-800 rounded-bl-lg'
                       }`}
                     >
                       {message.type === 'text' && (
@@ -402,7 +411,7 @@ export default function Index() {
               </div>
             </ScrollArea>
 
-            <div className="p-6 bg-white/90 backdrop-blur-xl border-t border-purple-100">
+            <div className={`p-6 backdrop-blur-xl border-t transition-colors duration-300 ${darkMode ? 'bg-gray-900/90 border-gray-800' : 'bg-white/90 border-purple-100'}`}>
               {isRecording ? (
                 <div className="flex gap-3 items-center animate-fade-in">
                   <div className="flex-1 flex items-center gap-4 bg-red-50 border border-red-200 rounded-full px-6 py-4">
@@ -424,10 +433,10 @@ export default function Index() {
                 </div>
               ) : (
                 <div className="flex gap-3 items-center">
-                  <Button size="icon" variant="ghost" className="rounded-full hover:bg-purple-100 flex-shrink-0">
+                  <Button size="icon" variant="ghost" className={`rounded-full flex-shrink-0 ${darkMode ? 'hover:bg-gray-800 text-gray-300' : 'hover:bg-purple-100'}`}>
                     <Icon name="Smile" size={22} />
                   </Button>
-                  <Button size="icon" variant="ghost" className="rounded-full hover:bg-purple-100 flex-shrink-0" onClick={sendFile}>
+                  <Button size="icon" variant="ghost" className={`rounded-full flex-shrink-0 ${darkMode ? 'hover:bg-gray-800 text-gray-300' : 'hover:bg-purple-100'}`} onClick={sendFile}>
                     <Icon name="Paperclip" size={22} />
                   </Button>
                   <Input
@@ -435,7 +444,7 @@ export default function Index() {
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
-                    className="flex-1 rounded-full border-purple-200 focus:border-purple-400 px-6 py-6"
+                    className={`flex-1 rounded-full px-6 py-6 transition-colors duration-300 ${darkMode ? 'bg-gray-800 border-gray-700 text-gray-100 placeholder:text-gray-500 focus:border-purple-500' : 'border-purple-200 focus:border-purple-400'}`}
                   />
                   <Button
                     size="icon"
@@ -461,8 +470,8 @@ export default function Index() {
               <div className="w-32 h-32 mx-auto mb-6 rounded-full bg-gradient-to-br from-purple-200 to-pink-200 flex items-center justify-center">
                 <Icon name="MessageCircle" size={64} className="text-purple-600" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-800 mb-2">Выберите чат</h2>
-              <p className="text-gray-600">Начните общение с друзьями</p>
+              <h2 className={`text-2xl font-bold mb-2 ${darkMode ? 'text-gray-100' : 'text-gray-800'}`}>Выберите чат</h2>
+              <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>Начните общение с друзьями</p>
             </div>
           </div>
         )}
