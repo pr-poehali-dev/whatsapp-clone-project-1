@@ -56,6 +56,7 @@ export default function Index() {
   const [showNewGroup, setShowNewGroup] = useState(false);
   const [userName, setUserName] = useState('Вы');
   const [userBio, setUserBio] = useState('Всегда на связи! 📱');
+  const [isTyping, setIsTyping] = useState(false);
 
   const sendMessage = () => {
     if (newMessage.trim()) {
@@ -79,6 +80,21 @@ export default function Index() {
       setTimeout(() => {
         setMessages(prev => prev.map(m => m.id === newMsg.id ? {...m, status: 'read'} : m));
       }, 3000);
+      
+      setTimeout(() => {
+        setIsTyping(true);
+        setTimeout(() => {
+          setIsTyping(false);
+          const responseMsg: Message = {
+            id: messages.length + 2,
+            text: 'Интересно! Расскажи больше 😊',
+            time: new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }),
+            sent: false,
+            type: 'text'
+          };
+          setMessages(prev => [...prev, responseMsg]);
+        }, 2000);
+      }, 4000);
     }
   };
 
@@ -364,7 +380,16 @@ export default function Index() {
                 <div>
                   <h2 className={`font-semibold text-lg ${darkMode ? 'text-gray-100' : 'text-gray-800'}`}>{selectedChat.name}</h2>
                   <p className={`text-sm flex items-center gap-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                    {selectedChat.isGroup ? (
+                    {isTyping ? (
+                      <span className="flex items-center gap-1 text-purple-600 font-medium animate-fade-in">
+                        печатает
+                        <span className="flex gap-1">
+                          <span className="w-1.5 h-1.5 bg-purple-600 rounded-full animate-bounce" style={{ animationDelay: '0s' }} />
+                          <span className="w-1.5 h-1.5 bg-purple-600 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
+                          <span className="w-1.5 h-1.5 bg-purple-600 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }} />
+                        </span>
+                      </span>
+                    ) : selectedChat.isGroup ? (
                       <span>{selectedChat.members?.length} участников</span>
                     ) : (
                       <>
@@ -509,6 +534,19 @@ export default function Index() {
                     </div>
                   </div>
                 ))}
+                {isTyping && (
+                  <div className="flex justify-start animate-fade-in">
+                    <div className={`px-5 py-3 rounded-3xl shadow-md rounded-bl-lg ${darkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-purple-100'}`}>
+                      <div className="flex items-center gap-2">
+                        <div className="flex gap-1">
+                          <span className={`w-2 h-2 rounded-full animate-bounce ${darkMode ? 'bg-gray-400' : 'bg-purple-400'}`} style={{ animationDelay: '0s' }} />
+                          <span className={`w-2 h-2 rounded-full animate-bounce ${darkMode ? 'bg-gray-400' : 'bg-purple-400'}`} style={{ animationDelay: '0.2s' }} />
+                          <span className={`w-2 h-2 rounded-full animate-bounce ${darkMode ? 'bg-gray-400' : 'bg-purple-400'}`} style={{ animationDelay: '0.4s' }} />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </ScrollArea>
 
